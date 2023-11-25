@@ -78,7 +78,7 @@ class ChatCompletionRequest(BaseModel):
 class CompletionRequest(BaseModel):
     model: str
     # a string, array of strings, array of tokens, or array of token arrays
-    prompt: Union[List[int], List[List[int]], str, List[str]]
+    prompt: Union[List[int], List[List[int]],List[str], str, dict]
     suffix: Optional[str] = None
     max_tokens: Optional[int] = 16
     temperature: Optional[float] = 1.0

@@ -6,10 +6,12 @@ import asyncio
 import json
 import time
 from http import HTTPStatus
-from typing import AsyncGenerator, Dict, List, Optional, Tuple, Union
+from typing import AsyncGenerator, Dict, List, Optional, Tuple, Union, LiteralString
 
 import fastapi
 import uvicorn
+import re
+from sqlitedict import SqliteDict
 from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,11 +42,14 @@ except ImportError:
     _fastchat_available = False
 
 TIMEOUT_KEEP_ALIVE = 5  # seconds
+DB_META_INFO = ["DESCRIBE", "PERSON OR ORG", "POSTING", "PRODUCT OR SERVICE",
+                "FOCUS", "RECIPIENT", "SENDER", "TITLE", "OUTLINE", "REFERENCE", "NUMERICAL"]
 
 logger = init_logger(__name__)
 served_model = None
 app = fastapi.FastAPI()
 engine = None
+database = SqliteDict("../DataBase/prompts.sqlite", "prompts")
 
 
 def create_error_response(status_code: HTTPStatus,
@@ -52,6 +57,26 @@ def create_error_response(status_code: HTTPStatus,
     return JSONResponse(ErrorResponse(message=message,
                                       type="invalid_request_error").dict(),
                         status_code=status_code.value)
+
+
+def generate_prompt_template(template: LiteralString, user_input: Dict):
+    try:
+        prompt = database[template]
+    except KeyError:
+        return create_error_response(
+            HTTPStatus.NOT_FOUND,
+            f"The template {template} not found."
+        )
+    prompt_user = re.search("User:.*", prompt)
+    for key, value in user_input.items():
+        if key not in DB_META_INFO:
+            return create_error_response(
+                HTTPStatus.NOT_ACCEPTABLE,
+                f"Given input field {key} not accepted."
+            )
+        prompt_user.replace(f"[{key}]", value)
+    prompt = re.sub("User:.*", prompt_user, prompt)
+    return prompt
 
 
 @app.exception_handler(RequestValidationError)
@@ -393,7 +418,9 @@ async def create_completion(request: CompletionRequest, raw_request: Request):
     request_id = f"cmpl-{random_uuid()}"
 
     use_token_ids = False
-    if isinstance(request.prompt, list):
+    if (isinstance(request.prompt, dict) and request.template):
+        prompt = generate_prompt_template(request.template, request.prompt)
+    elif isinstance(request.prompt, list):
         if len(request.prompt) == 0:
             return create_error_response(HTTPStatus.BAD_REQUEST,
                                          "please provide at least one prompt")
