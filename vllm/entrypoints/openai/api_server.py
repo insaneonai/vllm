@@ -6,7 +6,7 @@ import asyncio
 import json
 import time
 from http import HTTPStatus
-from typing import AsyncGenerator, Dict, List, Optional, Tuple, Union, LiteralString
+from typing import AsyncGenerator, Dict, List, Optional, Tuple, Union
 
 import fastapi
 import uvicorn
@@ -59,7 +59,7 @@ def create_error_response(status_code: HTTPStatus,
                         status_code=status_code.value)
 
 
-def generate_prompt_template(template: LiteralString, user_input: Dict):
+def generate_prompt_template(template: str, user_input: dict):
     try:
         prompt = database[template]
     except KeyError:
