@@ -49,7 +49,7 @@ logger = init_logger(__name__)
 served_model = None
 app = fastapi.FastAPI()
 engine = None
-database = SqliteDict("../DataBase/prompts.sqlite", "prompts")
+database = SqliteDict("./DataBase/prompts.sqlite", "prompts")
 
 
 def create_error_response(status_code: HTTPStatus,
