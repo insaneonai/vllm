@@ -7,6 +7,7 @@ import json
 import time
 from http import HTTPStatus
 from typing import AsyncGenerator, Dict, List, Optional, Tuple, Union
+from pathlib import Path
 
 import fastapi
 import uvicorn
@@ -49,8 +50,9 @@ logger = init_logger(__name__)
 served_model = None
 app = fastapi.FastAPI()
 engine = None
-database = SqliteDict("./DataBase/prompts.sqlite", "prompts")
+path = Path(__file__).parent
 
+database = SqliteDict(f"{path}/Database/prompts.sqlite",tablename="prompts")
 
 def create_error_response(status_code: HTTPStatus,
                           message: str) -> JSONResponse:
