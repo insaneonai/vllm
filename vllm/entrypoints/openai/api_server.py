@@ -43,7 +43,7 @@ except ImportError:
     _fastchat_available = False
 
 TIMEOUT_KEEP_ALIVE = 5  # seconds
-DB_META_INFO = ["DESCRIBE", "PERSON OR ORG", "POSTING", "PRODUCT OR SERVICE",
+DB_META_INFO = ["DESCRIBE", "PERSON or ORG", "POSTING", "PRODUCT OR SERVICE",
                 "FOCUS", "RECIPIENT", "SENDER", "TITLE", "OUTLINE", "REFERENCE", "NUMERICAL"]
 
 logger = init_logger(__name__)
@@ -76,7 +76,7 @@ def generate_prompt_template(template: str, user_input: dict):
                 HTTPStatus.NOT_ACCEPTABLE,
                 f"Given input field {key} not accepted."
             )
-        prompt_user.replace(f"[{key}]", value)
+        prompt_user = prompt_user.replace(f"[{key}]", value)
     prompt = re.sub("User:.*", prompt_user, prompt)
     return prompt
 
