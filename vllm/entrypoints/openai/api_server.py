@@ -52,7 +52,7 @@ app = fastapi.FastAPI()
 engine = None
 path = Path(__file__).parent
 
-database = SqliteDict(f"{path}/Database/prompts.sqlite",tablename="prompts")
+database = SqliteDict(f"{path}/DataBase/prompts.sqlite",tablename="prompts")
 
 def create_error_response(status_code: HTTPStatus,
                           message: str) -> JSONResponse:
@@ -63,13 +63,13 @@ def create_error_response(status_code: HTTPStatus,
 
 def generate_prompt_template(template: str, user_input: dict):
     try:
-        prompt = database[template]
+        prompt = database[template]["prompt"]
     except KeyError:
         return create_error_response(
             HTTPStatus.NOT_FOUND,
             f"The template {template} not found."
         )
-    prompt_user = re.search("User:.*", prompt)
+    prompt_user = re.search("User:.*", prompt).group()
     for key, value in user_input.items():
         if key not in DB_META_INFO:
             return create_error_response(
